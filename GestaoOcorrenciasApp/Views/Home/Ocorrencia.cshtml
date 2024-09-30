@@ -1,0 +1,353 @@
+﻿@{ Layout = "_Layout";
+    ViewData["Title"] = "Gestão de Ocorrências"; }
+
+
+<link rel="stylesheet" href="~/css/site.css" />
+<div class="container mt-4">
+    <h2>Gestão de Ocorrências</h2>
+
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <button class="btn btn-success" data-bind="click: incluirOcorrencia">Incluir Ocorrência</button>
+        </div>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Data Abertura</th>
+                <th>Data Ocorrência</th>
+                <th>Descrição</th>
+                <th>Responsável Abertura</th>
+                <th>Responsável Ocorrência</th>
+                <th>Conclusão</th>
+
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: OcorrenciasFiltradas">
+            <tr>
+
+                <td data-bind="text: formatDate(dataAbertura)"></td>
+                <td data-bind="text: formatDate(dataOcorrencia)"></td>
+                <td data-bind="text: descricao"></td>
+                <td data-bind="text: responsavelAberturaNome"></td>
+                <td data-bind="text: responsavelOcorrenciaNome"></td>
+                <td data-bind="text: conclusao"></td>
+                <td>
+                    <button class="btn btn-warning" data-bind="click: $parent.editarOcorrencias">Editar</button>
+                </td>
+                <td>
+                    <button class="btn btn-danger" data-bind="click: function() { $parent.deleteOcorrencia(id) }">Excluir</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="modalIncluirOcorrencia" tabindex="-1" role="dialog" aria-labelledby="modalIncluirOcorrenciaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document" style="width: 100%">
+            <div class="modal-content" style="width: 100%">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalIncluirOcorrenciaLabel">Incluir/Editar Ocorrência</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div id="formOcorrencia">
+                    <div class="step" id="step1">
+                        <div style="padding: 2px 20px 20px 20px;">
+                            <h4>Etapa: Abertura</h4>
+                        </div>
+                        <div class="form-group row" style="padding: 0px 20px 0px 20px;">
+                            <label for="dataAbertura" class="col-sm-3 col-form-label">Data de Abertura</label>
+                            <div class="col-sm-8">
+                                <input type="date" class="form-control" id="dataAbertura" data-bind="value: dataAbertura" />
+                            </div>
+                        </div>
+                        <div class="form-group row" style="padding: 0px 20px 0px 20px;">
+                            <label for="dataOcorrencia" class="col-sm-3 col-form-label">Data da Ocorrência</label>
+                            <div class="col-sm-8">
+                                <input type="date" class="form-control" id="dataOcorrencia" data-bind="value: dataOcorrencia" />
+                            </div>
+                        </div>
+                        <div class="form-group" style="padding: 0px 20px 0px 20px;">
+                            <label for="descricao">Descrição</label>
+                            <textarea class="form-control" id="descricao" rows="3" data-bind="value: descricao"></textarea>
+                        </div>
+                        <div style="padding: 2px 20px 20px 20px;">
+                            <button class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                        </div>
+                    </div>
+                    <div class="step" id="step2" style="display:none;">
+                        <div style="padding: 2px 20px 20px 20px;">
+                            <h4>Etapa: Identificação dos Responsáveis</h4>
+                        </div>
+                        <div class="form-group" style="padding: 0px 20px 0px 20px;">
+                            <label for="responsavelAbertura">Responsável pela Abertura</label>
+                            <select class="form-control" id="responsavelAbertura" data-bind="options: clientes, value: responsavelAbertura, optionsText: 'nome', optionsValue: 'id'" style="padding: 2px; height:38px;"></select>
+                        </div>
+                        <div class="form-group" style="padding: 0px 20px 0px 20px;">
+                            <label for="responsavelOcorrencia">Responsável pela Ocorrência</label>
+                            <select class="form-control" id="responsavelOcorrencia" data-bind="options: clientes, value: responsavelOcorrencia, optionsText: 'nome', optionsValue: 'id'" style="padding: 2px; height: 38px;"></select>
+                        </div>
+                        <div style="padding: 2px 20px 20px 20px;">
+                            <button class="btn btn-secondary" onclick="previousStep()">Anterior</button>
+                            <button class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                        </div>
+                    </div>
+                    <div class="step" id="step3" style="display:none; padding: 2px 20px 20px 20px;">
+                        <h4>Etapa: Conclusão</h4>
+                        <div class="form-group">
+                            <label for="conclusao">Conclusão</label>
+                            <textarea class="form-control" id="conclusao" rows="3" data-bind="value: conclusao"></textarea>
+                        </div>
+                        <button class="btn btn-secondary" onclick="previousStep()">Anterior</button>
+                        <button class="btn btn-success" onclick="salvarOcorrencia()">Finalizar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="~/lib/knockout-3.5.1.js"></script>
+
+<script>
+    function ViewModel() {
+        var self = this;
+
+        self.dataAbertura = ko.observable(new Date());
+        self.dataOcorrencia = ko.observable(new Date());
+        self.descricao = ko.observable();
+        self.responsavelAbertura = ko.observable();
+        self.responsavelOcorrencia = ko.observable();
+        self.conclusao = ko.observable();
+        self.clientes = ko.observableArray([]);
+        self.OcorrenciasFiltradas = ko.observableArray([]);
+        self.OcorrenciaSelecionada = ko.observable();
+
+        self.OcorrenciaSelecionada = ko.observable({
+            conclusao: "",
+            dataAbertura: "",
+            dataOcorrencia: "",
+            descricao: "",
+            responsavelAberturaId: "",
+            responsavelOcorrenciaId: "",
+        });
+
+        self.deleteOcorrencia = function (id) {
+            var confirmed = confirm("Você tem certeza que deseja excluir esta ocorrência?");
+
+            if (confirmed) {
+                $.ajax({
+                    url: 'https://localhost:44382/api/Ocorrencia/' + id,
+                    type: 'DELETE',
+                    contentType: 'application/json;charset=utf-8',
+                    success: function () {
+                        self.carregarOcorrencias();
+
+                        setTimeout(function () {
+                            alert('Ocorrência excluída com sucesso!');
+                        }, 200);
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Erro ao deletar ocorrência:', error);
+                        alert('Erro ao tentar deletar a ocorrência.');
+                    }
+                });
+            }
+        };
+
+        self.loadClientes = function () {
+            $.ajax({
+                url: 'https://localhost:44382/api/Cliente',
+                type: 'GET',
+                contentType: 'application/json;charset=utf-8',
+                success: function (data) {
+                    self.clientes([]);
+                    self.clientes(data.result);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Erro ao carregar clientes:', error);
+                }
+            });
+        };
+
+        self.carregarOcorrencias = function () {
+            $.ajax({
+                url: 'https://localhost:44382/api/Ocorrencia/detalhe',
+                type: 'GET',
+                contentType: 'application/json;charset=utf-8',
+                success: function (data) {
+                    self.OcorrenciasFiltradas(data.result);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Erro ao carregar ocorrências:', error);
+                    alert('Erro ao carregar ocorrências. Por favor, tente novamente.');
+                }
+            });
+        };
+
+        self.limparCampos = function () {
+            self.dataAbertura(new Date());
+            self.dataOcorrencia(new Date());
+            self.descricao('');
+            self.responsavelAbertura(null);
+            self.responsavelOcorrencia(null);
+            self.conclusao('');
+
+            self.OcorrenciaSelecionada({
+                conclusao: "",
+                dataAbertura: null,
+                dataOcorrencia: null,
+                descricao: "",
+                responsavelAberturaId: "",
+                responsavelOcorrenciaId: "",
+            });
+
+            // Resetar o passo do formulário
+            currentStep = 1;
+            for (let i = 1; i <= 3; i++) {
+                document.getElementById('step' + i).style.display = (i === 1) ? 'block' : 'none';
+            }
+        };
+
+
+        self.carregarOcorrencias();
+
+
+        self.incluirOcorrencia = function () {
+            self.OcorrenciaSelecionada({
+                conclusao: "",
+                dataAbertura: null,
+                dataOcorrencia: null,
+                descricao: "",
+                responsavelAberturaId: "",
+                responsavelOcorrenciaId: "",
+            });
+            $('#modalIncluirOcorrencia').modal('show');
+        };
+
+        self.editarOcorrencias = function (ocorrencia) {
+            self.OcorrenciaSelecionada(ocorrencia);
+            self.dataAbertura(formatDate(ocorrencia.dataAbertura));
+            self.dataOcorrencia(formatDate(ocorrencia.dataOcorrencia));
+            console.log('Data de Abertura:', ocorrencia.dataAbertura);
+            console.log('Data de Ocorrência:', ocorrencia.dataOcorrencia);
+            console.log('Data de Abertura:', self.dataAbertura());
+            console.log('Data de Ocorrência:', self.dataOcorrencia());
+            self.descricao(ocorrencia.descricao);
+            self.responsavelAbertura(ocorrencia.responsavelAberturaId);
+            self.responsavelOcorrencia(ocorrencia.responsavelOcorrenciaId);
+            self.conclusao(ocorrencia.conclusao);
+            $('#modalIncluirOcorrencia').modal('show');
+        };
+
+        self.loadClientes();
+    }
+
+
+    var viewModel = new ViewModel();
+    ko.applyBindings(viewModel);
+
+    var currentStep = 1;
+
+    function nextStep() {
+        if (currentStep === 1) {
+
+            var dataAbertura = document.getElementById('dataAbertura').value;
+            var dataOcorrencia = document.getElementById('dataOcorrencia').value;
+            var descricao = document.getElementById('descricao').value;
+
+            if (!dataAbertura || !dataOcorrencia || !descricao) {
+                alert("Preencha todos os campos antes de avançar.");
+                return;
+            }
+
+            var dataAberturaObj = new Date(dataAbertura);
+            var dataOcorrenciaObj = new Date(dataOcorrencia);
+
+            if (dataAberturaObj < dataOcorrenciaObj) {
+                alert("A data de abertura não pode ser anterior à data da ocorrência.");
+                return;
+            }
+        }
+
+        if (currentStep === 2) {
+            var responsavelAbertura = document.getElementById('responsavelAbertura').value;
+            var responsavelOcorrencia = document.getElementById('responsavelOcorrencia').value;
+
+            if (!responsavelAbertura || !responsavelOcorrencia) {
+                alert("Preencha todos os campos antes de avançar.");
+                return;
+            }
+        }
+
+        if (currentStep < 3) {
+            document.getElementById('step' + currentStep).style.display = 'none';
+            currentStep++;
+            document.getElementById('step' + currentStep).style.display = 'block';
+        }
+    }
+
+    function previousStep() {
+        if (currentStep > 1) {
+            document.getElementById('step' + currentStep).style.display = 'none';
+            currentStep--;
+            document.getElementById('step' + currentStep).style.display = 'block';
+        }
+    }
+
+    function salvarOcorrencia() {
+
+        var ocorrencia = {
+            id: viewModel.OcorrenciaSelecionada().id,
+            dataAbertura: viewModel.dataAbertura(),
+            dataOcorrencia: viewModel.dataOcorrencia(),
+            descricao: viewModel.descricao(),
+            responsavelAberturaId: viewModel.responsavelAbertura(),
+            responsavelOcorrenciaId: viewModel.responsavelOcorrencia(),
+            conclusao: viewModel.conclusao()
+        };
+
+        var url = ocorrencia.id ?
+            'https://localhost:44382/api/Ocorrencia/' + ocorrencia.id :
+            'https://localhost:44382/api/Ocorrencia';
+
+        var method = ocorrencia.id ? 'PUT' : 'POST';
+
+        $.ajax({
+            url: url,
+            type: method,
+            contentType: 'application/json;charset=utf-8',
+            data: JSON.stringify(ocorrencia),
+            success: function (data) {
+                viewModel.carregarOcorrencias();
+                $('#modalIncluirOcorrencia').modal('hide');
+
+                setTimeout(function () {
+                    alert('Ocorrência criada com sucesso!');
+                }, 200);
+            },
+            error: function (xhr, status, error) {
+                console.error('Erro ao salvar a ocorrência:', error);
+            }
+        });
+    }
+
+    function formatDate(dateString) {
+
+        if (!dateString) return '';
+
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    }
+
+</script>

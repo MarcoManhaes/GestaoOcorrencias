@@ -1,0 +1,235 @@
+﻿@{ Layout = "_Layout";
+    ViewData["Title"] = "Cliente"; }
+
+<h1>Lista de Clientes</h1>
+
+<div class="row mb-4">
+    <div class="col-md-2">
+        <input type="text" class="form-control" placeholder="Código (ID)" data-bind="value: filtroCodigo" />
+    </div>
+    <div class="col-md-6">
+        <input type="text" class="form-control" placeholder="Nome" data-bind="value: filtroNome" />
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-primary" data-bind="click: pesquisarClientes">Pesquisar</button>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-success" data-bind="click: incluirCliente">Incluir Cliente</button>
+    </div>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Nome</th>
+            <th>Endereço</th>
+            <th>Telefone</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody data-bind="foreach: ClientesFiltrados">
+        <tr>
+            <td data-bind="text: id"></td>
+            <td data-bind="text: nome"></td>
+            <td data-bind="text: endereco"></td>
+            <td data-bind="text: telefone"></td>
+            <td data-bind="text: email"></td>
+            <td>
+                <button class="btn btn-warning" data-bind="click: $parent.editarCliente">Editar</button>
+            </td>
+            <td>
+                <button class="btn btn-danger" data-bind="click: function() { $parent.deleteCliente(id) }">Excluir</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="modal fade" id="modalEditarCliente" tabindex="-1" role="dialog" aria-labelledby="modalEditarClienteLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEditarClienteLabel">Incluir/Editar Cliente</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            @*<p data-bind="text: ko.toJSON(ClienteSelecionado, null, 2)"></p>*@
+            <div class="modal-body">
+                <form id="formEditarCliente">
+                    <div class="form-group">
+                        <label for="nome">Nome</label>
+                        <input type="text" class="form-control" id="nome" data-bind="value: ClienteSelecionado().nome" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" class="form-control" id="endereco" data-bind="value: ClienteSelecionado().endereco" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" data-bind="value: ClienteSelecionado().telefone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" id="email" data-bind="value: ClienteSelecionado().email" required>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" data-bind="click: salvarAlteracoes">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            Inputmask({ "mask": "(99) 99999-9999" }).mask("#telefone");
+        });
+
+        function AppViewModel() {
+            var self = this;
+            self.ClienteSelecionado = ko.observable();
+
+            self.filtroCodigo = ko.observable("");
+            self.filtroNome = ko.observable("");
+
+            self.ClientesOriginais = ko.observableArray([]);
+            self.ClientesFiltrados = ko.observableArray([]);
+
+            self.ClienteSelecionado = ko.observable({
+                nome: "",
+                endereco: "",
+                telefone: "",
+                email: ""
+            });
+
+            self.loadClientes = function () {
+                $.ajax({
+                    url: 'https://localhost:44382/api/Cliente',
+                    type: 'GET',
+                    contentType: 'application/json;charset=utf-8',
+                    success: function (data) {
+                        self.ClientesOriginais(data.result);
+                        self.ClientesFiltrados(self.ClientesOriginais());
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Erro ao carregar clientes:', error);
+                    }
+                });
+            };
+
+            self.pesquisarClientes = function () {
+                var codigo = self.filtroCodigo();
+                var nome = self.filtroNome().toLowerCase();
+
+                var clientesFiltrados = ko.utils.arrayFilter(self.ClientesOriginais(), function (cliente) {
+                    var filtroPorCodigo = codigo === "" || cliente.id == codigo;
+                    var filtroPorNome = nome === "" || cliente.nome.toLowerCase().indexOf(nome) !== -1;
+                    return filtroPorCodigo && filtroPorNome;
+                });
+
+                self.ClientesFiltrados(clientesFiltrados);
+            };
+
+            self.deleteCliente = function (id) {
+                var confirmed = confirm("Você tem certeza que deseja excluir este cliente?");
+                
+                if (confirmed) {
+                    $.ajax({
+                        url: 'https://localhost:44382/api/Cliente/' + id, 
+                        type: 'DELETE', 
+                        contentType: 'application/json;charset=utf-8',
+                        success: function () {
+
+                            self.loadClientes(); 
+                            
+                            setTimeout(function () {
+                                alert('Cliente excluído com sucesso!');
+                            }, 200);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Erro ao excluir cliente:', error);
+
+                            // Exibir mensagem de erro baseada no status da resposta
+                            if (xhr.status === 400) { // Verifica se o status é 400 (Bad Request)
+                                alert(xhr.responseText); // Exibe a mensagem de erro retornada pelo servidor
+                            } else {
+                                alert('Erro ao tentar excluir cliente.');
+                            }
+                        }
+                    });
+                }
+            };
+
+            self.incluirCliente = function () {
+                self.ClienteSelecionado({
+                    nome: "",
+                    endereco: "",
+                    telefone: "",
+                    email: ""
+                });
+
+                $('#modalEditarCliente').modal('show');
+            };
+
+            self.editarCliente = function (cliente) {
+                self.ClienteSelecionado(cliente);
+                $('#modalEditarCliente').modal('show');
+            };
+
+            self.salvarAlteracoes = function () {
+                if (!validarCampos())
+                    return;
+
+                var clienteAtualizado = ko.toJS(self.ClienteSelecionado()); 
+
+                var requestType = clienteAtualizado.id ? 'PUT' : 'POST';
+                var requestUrl = clienteAtualizado.id
+                    ? 'https://localhost:44382/api/Cliente/' + clienteAtualizado.id
+                    : 'https://localhost:44382/api/Cliente'; 
+
+                $.ajax({
+                    url: requestUrl,
+                    type: requestType,
+                    contentType: 'application/json;charset=utf-8',
+                    data: JSON.stringify(clienteAtualizado), 
+                    success: function (data) {
+                        console.log('Cliente salvo com sucesso:', data);
+                        self.loadClientes(); 
+                        $('#modalEditarCliente').modal('hide'); 
+
+                        setTimeout(function () {
+                            alert('Cliente atualizado com sucesso!');
+                        }, 200);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Erro ao salvar cliente:', error);
+                    }
+                });
+            };
+
+            self.loadClientes();
+        }
+
+        var viewModel = new AppViewModel();
+        ko.applyBindings(viewModel);
+
+        function validarCampos() {
+            var nome = document.getElementById('nome').value;
+            var endereco = document.getElementById('endereco').value;
+            var telefone = document.getElementById('telefone').value;
+            var email = document.getElementById('email').value;
+
+            if (!nome || !endereco || !telefone || !email) {
+                alert("Preencha todos os campos antes de avançar.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+}

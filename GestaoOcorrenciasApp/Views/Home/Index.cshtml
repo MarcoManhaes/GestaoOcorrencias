@@ -1,0 +1,118 @@
+﻿@{ ViewData["Title"] = "Home Page"; }
+
+<div class="container my-5">
+    <h1 class="display-4 text-center">Gestão de Ocorrências</h1>
+    <p class="lead text-center">
+        Projeto Web de Gestão de Ocorrências usando ASP.Net Core Web App, que se comunica com um projeto Web Api.
+    </p>
+
+    <div class="my-4">
+        <h2>Status</h2>
+        <p>Desenvolvido</p>
+    </div>
+
+    <div class="my-4">
+        <h2>Conceitos e Requisitos Propostos</h2>
+        <ul class="list-unstyled text-justify">
+            <li>* Lógica de programação</li>
+            <li>* Conceitos de orientação a objetos</li>
+            <li>* Conceitos e prática de design patterns</li>
+            <li>* DDD</li>
+            <li>* Clean Code</li>
+            <li>* SOLID</li>
+            <li>* Bibliotecas de front-end: JS, Knockout.js, Razor, Bootstrap, jQuery</li>
+            <li>* Conceitos e práticas de OCR (neste caso, EF)</li>
+            <li>* Integração com banco de dados (neste caso, SQLite)</li>
+            <li>* Testes Unitários (Não desenvolvidos devido ao tempo escasso para o projeto)</li>
+        </ul>
+    </div>
+
+    <div class="my-4">
+        <h2>Técnicas, Arquitetura Padrões e Abordagens aplicadas:</h2>
+        <ul class="list-unstyled text-justify">
+            <li>* Arquitetura em Camadas</li>
+            <li>* Arquitetura MVC</li>
+            <li>* Arquitetura e abordagens Domain-Driven Design (DDD)</li>
+            <li>* Design Patterns (Repository)</li>
+            <li>* Injeção de Dependências (Singleton e Scoped)</li>
+            <li>* Herança</li>
+            <li>* Polimorfismo</li>
+            <li>* Interfaces</li>
+            <li>* Generic Class</li>
+            <li>* Princípios SOLID</li>
+            <li>* Práticas Clean Code</li>
+        </ul>
+    </div>
+
+        <div class="my-4">
+            <h2>O que foi desenvolvido?</h2>
+            <p class="text-justify">
+                O front-end, desenvolvido em HTML, Razor, Knockout, Bootstrap e AJAX, faz integração com uma API que se conecta a um banco de dados SQLite.
+                Este banco de dados é gerado e autogerenciado pela aplicação através da tecnologia Fluent Migration, que tem como principal objetivo o versionamento do mesmo através de scripts e mapeamentos.
+                A geração do banco é realizada na primeira execução da aplicação.
+            </p>
+        </div>
+
+        <div class="my-4">
+            <h2>Execução do Projeto</h2>
+            <p class="text-justify">
+                Baixar o projeto em uma estação local utilizando o Visual Studio (preferencialmente 2019):
+                <ul>
+                    <li>Abra a Solution contendo o conjunto de projetos que integram o projeto.</li>
+                    <li>Clique com o botão direito sobre a solution e selecione "Set Startup Project...".</li>
+                    <li>Selecione "Multiple startup projects" e altere para a opção "Start" nos projetos "GestaoOcorrenciasApi" e "GestaoOcorrenciasApp".</li>
+                    <li>Compile a solution e rode o projeto com F5 ou Ctrl + F5 (Debug).</li>
+                </ul>
+            </p>
+        </div>
+
+        <div class="my-4">
+            <h2>Pré-Requisitos</h2>
+            <p class="text-justify">É necessário que a estação que executará o projeto contenha o Microsoft .NET Core SDK 5.0 instalado.</p>
+        </div>
+
+        <div class="my-4">
+            <h2>Base de Dados</h2>
+            <p class="text-justify">
+                A base de dados é gerada com o nome <strong>gestao-ocorrencia_db.sqlite</strong> no diretório:
+                <code>C:\Users\marco\AppData\Roaming\GestaoOcorrencias.Application</code>
+            </p>
+            <p class="text-justify">
+                Acessado pela aplicação através de:
+                <code>Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "LegalScraper.Application");</code>
+            </p>
+            <p class="text-justify">
+                O gerenciador de base de dados utilidado para este caso é o SQWLite Studio (muito leve) disponível em:
+                https://sqlitestudio.pl/
+            </p>
+        </div>
+
+        <div class="my-4">
+            <h2>Tecnologias Utilizadas</h2>
+            <pre class="text-justify">
+* Microsoft.NetCore 5.0
+* Asp.Net Core Web App 5.0
+* Dependency Injection
+* Entity Framework Core
+* SQLite Core 
+* Fluent Migration
+* Swashbuckle Swagger
+* Newtonsoft.Json
+* SQLite
+* Razor
+* Knockout
+* JavaScript
+* Bootstrap
+* Web API
+        </pre>
+        </div>
+
+        <div class="my-4">
+            <h2>Autor</h2>
+            <p class="text-justify">👤 <strong>Marco Manhães Júnior</strong></p>
+            <p class="text-justify">
+                GitHub: <a href="https://github.com/MarcoManhaes" target="_blank">MarcoManhaes</a><br>
+                LinkedIn: <a href="https://linkedin.com/in/marco-manhaes" target="_blank">marco-manhaes</a>
+            </p>
+        </div>
+</div>
