@@ -97,3 +97,12 @@ body {
     .modal-content textarea {
         padding: 10px; /* Padding nos inputs e textareas */
     }
+
+.nav-link {
+    font-size: 1.5rem !important; /* Ajuste conforme necessário */
+    padding: 10px 15px !important; /* Espaçamento adicional */
+}
+
+.navbar-brand {
+    font-size: 1.5rem; /* Tamanho do nome do aplicativo */
+}
