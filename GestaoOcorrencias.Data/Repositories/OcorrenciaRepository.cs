@@ -36,7 +36,7 @@ namespace GestaoOcorrencias.Data.Repositories
         {
             try
             {
-                var ocorrencias = await _context.Ocorrencias
+                var ocorrencias = await _context.Ocorrencias.AsNoTracking()
                     .Include(o => o.ResponsavelAbertura)
                     .Include(o => o.ResponsavelOcorrencia)
                     .Select(o => new OcorrenciaDto
